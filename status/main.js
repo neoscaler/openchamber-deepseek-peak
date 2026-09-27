@@ -1,10 +1,8 @@
-// Hand-rolled slice of @openchamber/sdk: hello, ready, resize. No build step.
+// Hand-rolled slice of @openchamber/sdk: hello and the ready push. No build step.
 (function () {
   var CHANNEL = 'openchamber.sdk'
   var API = 1
-  var MIN_HEIGHT = 24
-  var MAX_HEIGHT = 320
-  var POLL_MS = 30000
+  var POLL_MS = 5000
 
   var badge = document.getElementById('badge')
   var seq = 0
@@ -19,18 +17,11 @@
     window.parent.postMessage(message, '*')
   }
 
-  function resize() {
-    var height = Math.ceil(document.body.scrollHeight) || MIN_HEIGHT
-    post('resize', { height: Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, height)) })
-  }
-
   function render() {
-    var text = window.openchamberPeakBadge.label(new Date())
-    if (badge.textContent !== text) badge.textContent = text
-    badge.style.color = window.openchamberPeakBadge.isPeak(new Date())
-      ? 'var(--oc-warning-text)'
-      : 'var(--oc-muted)'
-    resize()
+    var state = window.openchamberPeakBadge.state(new Date())
+    if (badge.textContent !== state.label) badge.textContent = state.label
+    var peak = state.peak ? 'true' : 'false'
+    if (badge.dataset.peak !== peak) badge.dataset.peak = peak
   }
 
   window.addEventListener('message', function (event) {
@@ -39,9 +30,10 @@
     if (!data || data.channel !== CHANNEL || data.v !== API || data.type !== 'ready') return
     var tokens = data.payload && data.payload.theme && data.payload.theme.tokens
     if (tokens) {
-      badge.style.setProperty('--oc-warning-text', tokens.warningText)
-      badge.style.setProperty('--oc-muted', tokens.muted)
-      badge.style.setProperty('--oc-font', tokens.font)
+      var root = document.documentElement.style
+      root.setProperty('--oc-warning-text', tokens.warningText)
+      root.setProperty('--oc-muted', tokens.muted)
+      root.setProperty('--oc-font', tokens.font)
     }
     render()
   })

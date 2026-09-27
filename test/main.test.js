@@ -8,14 +8,11 @@ const RealDate = Date
 function loadMain({ now = '2026-09-28T05:00:00Z', source = 'host' } = {}) {
   const posted = []
   const listeners = {}
-  const badge = {
-    textContent: '',
-    style: {
-      color: '',
-      properties: {},
-      setProperty(name, value) {
-        this.properties[name] = value
-      },
+  const badge = { textContent: '', dataset: {} }
+  const rootStyle = {
+    properties: {},
+    setProperty(name, value) {
+      this.properties[name] = value
     },
   }
   const host = { postMessage: (message) => posted.push(message) }
@@ -28,7 +25,7 @@ function loadMain({ now = '2026-09-28T05:00:00Z', source = 'host' } = {}) {
   }
   global.document = {
     getElementById: (id) => (id === 'badge' ? badge : null),
-    body: { scrollHeight: 24 },
+    documentElement: { style: rootStyle },
   }
   global.setInterval = () => 0
   global.openchamberPeakBadge = require('../status/peak.js')
@@ -44,51 +41,44 @@ function loadMain({ now = '2026-09-28T05:00:00Z', source = 'host' } = {}) {
   } finally {
     global.Date = RealDate
   }
-  return { posted, badge, host, listeners }
+  return { posted, badge, rootStyle, host, listeners }
 }
 
-const find = (posted, type) => posted.filter((message) => message.type === type)
+const ready = (tokens) => ({
+  channel: 'openchamber.sdk',
+  v: 1,
+  type: 'ready',
+  payload: { theme: { tokens } },
+})
 
 test('announces itself to the host frame', () => {
   const { posted } = loadMain()
   assert.deepEqual(posted[0], { channel: 'openchamber.sdk', v: 1, type: 'hello' })
 })
 
-test('renders the current window and asks for its height', () => {
+test('renders the current window', () => {
   const offPeak = loadMain()
   assert.equal(offPeak.badge.textContent, 'OFF-PEAK')
-  assert.deepEqual(find(offPeak.posted, 'resize')[0].payload, { height: 24 })
+  assert.equal(offPeak.badge.dataset.peak, 'false')
 
   const peak = loadMain({ now: '2026-09-28T02:00:00Z' })
   assert.equal(peak.badge.textContent, 'PEAK')
+  assert.equal(peak.badge.dataset.peak, 'true')
 })
 
 test('takes colours and font from the host theme', () => {
-  const { badge, listeners } = loadMain()
+  const { rootStyle, listeners } = loadMain()
   listeners.message({
     source: global.window.parent,
-    data: {
-      channel: 'openchamber.sdk',
-      v: 1,
-      type: 'ready',
-      payload: { theme: { tokens: { warningText: '#f90', muted: '#888', font: 'Inter' } } },
-    },
+    data: ready({ warningText: '#f90', muted: '#888', font: 'Inter' }),
   })
-  assert.equal(badge.style.properties['--oc-warning-text'], '#f90')
-  assert.equal(badge.style.properties['--oc-muted'], '#888')
-  assert.equal(badge.style.properties['--oc-font'], 'Inter')
+  assert.equal(rootStyle.properties['--oc-warning-text'], '#f90')
+  assert.equal(rootStyle.properties['--oc-muted'], '#888')
+  assert.equal(rootStyle.properties['--oc-font'], 'Inter')
 })
 
 test('ignores messages that are not from the host frame', () => {
-  const { badge, listeners, host } = loadMain({ source: 'other' })
-  listeners.message({
-    source: host,
-    data: {
-      channel: 'openchamber.sdk',
-      v: 1,
-      type: 'ready',
-      payload: { theme: { tokens: { warningText: '#f90' } } },
-    },
-  })
-  assert.equal(badge.style.properties['--oc-warning-text'], undefined)
+  const { rootStyle, listeners, host } = loadMain({ source: 'other' })
+  listeners.message({ source: host, data: ready({ warningText: '#f90' }) })
+  assert.equal(rootStyle.properties['--oc-warning-text'], undefined)
 })

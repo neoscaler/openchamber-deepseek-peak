@@ -15,10 +15,11 @@ function isPeak(date) {
   return false
 }
 
-function label(date) {
-  return isPeak(date) ? 'PEAK' : 'OFF-PEAK'
+function state(date) {
+  var peak = isPeak(date)
+  return { label: peak ? 'PEAK' : 'OFF-PEAK', peak: peak }
 }
 
-var api = { isPeak: isPeak, label: label }
+var api = { isPeak: isPeak, state: state }
 if (typeof module !== 'undefined') module.exports = api
 else globalThis.openchamberPeakBadge = api

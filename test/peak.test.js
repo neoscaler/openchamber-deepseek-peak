@@ -1,6 +1,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const { isPeak, label } = require('../status/peak.js')
+const { isPeak, state } = require('../status/peak.js')
 
 const at = (iso) => new Date(iso)
 
@@ -24,7 +24,7 @@ test('weekend is always off-peak', () => {
   assert.equal(isPeak(at('2026-09-27T07:00:00Z')), false)
 })
 
-test('label follows the window', () => {
-  assert.equal(label(at('2026-09-28T02:00:00Z')), 'PEAK')
-  assert.equal(label(at('2026-09-26T02:00:00Z')), 'OFF-PEAK')
+test('state carries the label and the flag', () => {
+  assert.deepEqual(state(at('2026-09-28T02:00:00Z')), { label: 'PEAK', peak: true })
+  assert.deepEqual(state(at('2026-09-26T02:00:00Z')), { label: 'OFF-PEAK', peak: false })
 })
