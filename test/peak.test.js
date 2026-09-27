@@ -59,12 +59,13 @@ test('counts across the weekend to Monday', () => {
   assert.equal(nextChange(at('2026-09-27T03:00:00Z')).toISOString(), '2026-09-28T01:00:00.000Z')
 })
 
-test('formats the remaining time to the minute', () => {
-  assert.equal(formatRemaining(90_000), '0:02')
-  assert.equal(formatRemaining(2_700_000), '0:45')
-  assert.equal(formatRemaining(3_600_000), '1:00')
-  assert.equal(formatRemaining(7_290_000), '2:02')
-  assert.equal(formatRemaining(223_200_000), '62:00')
-  assert.equal(formatRemaining(0), '0:00')
-  assert.equal(formatRemaining(-5_000), '0:00')
+test('formats the remaining time to ten seconds', () => {
+  assert.equal(formatRemaining(1), '0:00:10')
+  assert.equal(formatRemaining(90_000), '0:01:30')
+  assert.equal(formatRemaining(2_700_000), '0:45:00')
+  assert.equal(formatRemaining(3_599_999), '1:00:00')
+  assert.equal(formatRemaining(7_290_000), '2:01:30')
+  assert.equal(formatRemaining(223_200_000), '62:00:00')
+  assert.equal(formatRemaining(0), '0:00:00')
+  assert.equal(formatRemaining(-5_000), '0:00:00')
 })

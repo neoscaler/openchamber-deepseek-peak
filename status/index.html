@@ -15,14 +15,12 @@
         align-items: center;
         font-family: var(--oc-font, system-ui, sans-serif);
       }
+      /* No fill of its own: the panel background stays the only surface, so
+         the brackets carry the shape in light and dark themes alike. */
       #badge {
         display: inline-flex;
         align-items: baseline;
         gap: 6px;
-        padding: 1px 6px;
-        border-radius: var(--oc-radius, 6px);
-        /* Neutral pill, so the colours read on light and dark themes. */
-        background: var(--oc-muted-surface, rgba(127, 127, 127, 0.12));
         font-size: 12px;
         letter-spacing: 0.04em;
       }

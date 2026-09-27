@@ -2,7 +2,7 @@
 (function () {
   var CHANNEL = 'openchamber.sdk'
   var API = 1
-  var POLL_MS = 5000
+  var POLL_MS = 10000
 
   var peak = window.openchamberPeakBadge
   var badge = document.getElementById('badge')
@@ -30,10 +30,10 @@
     var isPeak = peak.isPeak(now)
     var flag = isPeak ? 'true' : 'false'
     if (badge.dataset.peak !== flag) badge.dataset.peak = flag
-    var text = isPeak ? 'PEAK' : 'OFF-PEAK'
+    var text = isPeak ? '[PEAK]' : '[OFF-PEAK]'
     if (label.textContent !== text) label.textContent = text
     var next = peak.nextChange(now)
-    var remaining = next ? peak.formatRemaining(next - now) : ''
+    var remaining = next ? 'Switch ' + peak.formatRemaining(next - now) : ''
     if (count.textContent !== remaining) count.textContent = remaining
   }
 
