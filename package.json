@@ -1,0 +1,28 @@
+{
+  "name": "openchamber-peak-badge",
+  "version": "0.1.0",
+  "description": "OpenChamber Work Status badge: DeepSeek peak or off-peak billing window",
+  "license": "MIT",
+  "keywords": [
+    "openchamber",
+    "openchamber-extension",
+    "deepseek",
+    "peak"
+  ],
+  "openchamber": {
+    "apiVersion": 1,
+    "engines": {
+      "openchamber": ">=2.0.1"
+    },
+    "contributes": {
+      "statusSection": {
+        "entry": "status/index.html",
+        "title": "DeepSeek billing",
+        "height": 24
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
