@@ -47,13 +47,11 @@ function nextChange(date) {
 }
 
 function formatRemaining(ms) {
-  var total = Math.max(0, Math.floor(ms / 1000))
-  var hours = Math.floor(total / 3600)
-  var minutes = Math.floor((total % 3600) / 60)
-  var seconds = total % 60
-  var mm = (minutes < 10 ? '0' : '') + minutes
-  var ss = (seconds < 10 ? '0' : '') + seconds
-  return hours > 0 ? hours + ':' + mm + ':' + ss : mm + ':' + ss
+  // Rounded up: the badge should not read 0:00 while the phase still runs.
+  var minutes = Math.max(0, Math.ceil(ms / 60000))
+  var hours = Math.floor(minutes / 60)
+  var rest = minutes % 60
+  return hours + ':' + (rest < 10 ? '0' : '') + rest
 }
 
 var api = {

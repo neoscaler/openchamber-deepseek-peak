@@ -2,7 +2,7 @@
 (function () {
   var CHANNEL = 'openchamber.sdk'
   var API = 1
-  var POLL_MS = 1000
+  var POLL_MS = 5000
 
   var peak = window.openchamberPeakBadge
   var badge = document.getElementById('badge')

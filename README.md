@@ -5,8 +5,8 @@ A [DeepSeek peak / off-peak badge](https://api-docs.deepseek.com/quick_start/pri
 with the countdown to the next phase change:
 
 ```
-DeepSeek   ( OFF-PEAK  1:24:10 )   # neutral label, dimmer counter
-DeepSeek   ( PEAK      0:36:02 )   # warning tone, same pill
+DeepSeek   ( OFF-PEAK  1:24 )   # neutral label, dimmer counter
+DeepSeek   ( PEAK      0:36 )   # warning tone, same pill
 ```
 
 Nothing else in the section, and nothing on the rail: no service, no API key, no network, no
@@ -45,7 +45,7 @@ DeepSeek bills at peak rates on weekdays only, in two UTC windows:
 
 Same windows as the OpenCode TUI plugin [opencode-peak-badge](https://github.com/hugobatista/opencode-peak-badge),
 so both badges agree. They are the two constants at the top of `status/peak.js`; change them
-there for a provider with different hours. The countdown ticks every second and waits out the
+there for a provider with different hours. The countdown shows minutes and waits out the
 weekend: on a Friday evening it counts to Monday 01:00 UTC, the next peak start.
 
 The frame is 24 px, set by `height` in the manifest. The page and the CSS in it stay on one

@@ -94,11 +94,11 @@ test('shows off-peak neutrally and peak in the warning state', () => {
 test('counts down to the phase change', () => {
   const { nodes, send } = loadMain({ now: '2026-09-28T02:00:00Z' })
   send(ready(deepseek))
-  assert.equal(nodes.count.textContent, '2:00:00')
+  assert.equal(nodes.count.textContent, '2:00')
 
   const across = loadMain({ now: '2026-09-28T02:59:30Z' })
   across.send(ready(deepseek))
-  assert.equal(across.nodes.count.textContent, '1:00:30')
+  assert.equal(across.nodes.count.textContent, '1:01')
 })
 
 test('hides for any other provider, including resold DeepSeek models', () => {
