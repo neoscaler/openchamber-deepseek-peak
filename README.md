@@ -75,16 +75,20 @@ zone really applied, and that all four agree.
 
 ```
 package.json        manifest: statusSection only, apiVersion 1, no capabilities
-icon.svg            the DeepSeek mark, used as the section's header icon
+icon.svg            the DeepSeek mark, drawn as a currentColor mask by the host
 status/index.html   the page, static CSS
 status/peak.js      peak windows, nextChange(), the provider check
 status/main.js      host handshake and render
 test/               node --test, no dependencies
 ```
 
-The header icon is DeepSeek's own logo, taken from their docs site and recoloured to the
-brand blue so it reads on a light and a dark panel. It stays DeepSeek's mark; the extension
-only uses it to say which provider the row is about.
+The header icon is DeepSeek's own mark. The host draws a package SVG as a CSS mask filled
+with `currentColor` (`GuestRailIcon`), so the file's own colour never shows: the mark takes the
+muted text colour of the header and therefore works unchanged in the light and the dark theme.
+What matters is the crop, and this one is taken from
+[openchamber-deepseek-usage](https://github.com/shusongLu/openchamber-deepseek-usage) (MIT),
+whose tight `viewBox` makes the mark fill the 16 px slot instead of floating in it. The mark
+itself stays DeepSeek's; the extension only uses it to say which provider the row is about.
 
 The host schema requires `contributes.panel` (id, name, icon) even for an extension that
 ships only a section — leaving the block out fails the install with `missing-panel` and
