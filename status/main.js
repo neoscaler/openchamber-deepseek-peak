@@ -2,10 +2,12 @@
 (function () {
   var CHANNEL = 'openchamber.sdk'
   var API = 1
-  var POLL_MS = 5000
+  var POLL_MS = 1000
 
   var peak = window.openchamberPeakBadge
   var badge = document.getElementById('badge')
+  var label = document.getElementById('label')
+  var count = document.getElementById('count')
   // The session's model, "<providerID>/<modelID>"; null hides the badge.
   var model = null
   var seq = 0
@@ -21,11 +23,18 @@
   }
 
   function render() {
-    var state = peak.isDeepSeek(model) ? peak.state(new Date()) : null
-    var text = state ? state.label : ''
-    if (badge.textContent !== text) badge.textContent = text
-    var flag = state ? (state.peak ? 'true' : 'false') : 'none'
+    var applicable = peak.isDeepSeekProvider(model)
+    if (badge.hidden !== !applicable) badge.hidden = !applicable
+    if (!applicable) return
+    var now = new Date()
+    var isPeak = peak.isPeak(now)
+    var flag = isPeak ? 'true' : 'false'
     if (badge.dataset.peak !== flag) badge.dataset.peak = flag
+    var text = isPeak ? 'PEAK' : 'OFF-PEAK'
+    if (label.textContent !== text) label.textContent = text
+    var next = peak.nextChange(now)
+    var remaining = next ? peak.formatRemaining(next - now) : ''
+    if (count.textContent !== remaining) count.textContent = remaining
   }
 
   window.addEventListener('message', function (event) {

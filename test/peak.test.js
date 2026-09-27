@@ -1,6 +1,11 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const { isPeak, state, isDeepSeek } = require('../status/peak.js')
+const {
+  isPeak,
+  isDeepSeekProvider,
+  nextChange,
+  formatRemaining,
+} = require('../status/peak.js')
 
 const at = (iso) => new Date(iso)
 
@@ -24,22 +29,39 @@ test('weekend is always off-peak', () => {
   assert.equal(isPeak(at('2026-09-27T07:00:00Z')), false)
 })
 
-test('state carries the label and the flag', () => {
-  assert.deepEqual(state(at('2026-09-28T02:00:00Z')), { label: 'PEAK', peak: true })
-  assert.deepEqual(state(at('2026-09-26T02:00:00Z')), { label: 'OFF-PEAK', peak: false })
+test('only the DeepSeek provider counts', () => {
+  assert.equal(isDeepSeekProvider('deepseek/deepseek-flash'), true)
+  assert.equal(isDeepSeekProvider('DeepSeek/deepseek-v4-pro'), true)
 })
 
-test('tracks DeepSeek models behind any provider', () => {
-  assert.equal(isDeepSeek('deepseek/deepseek-flash'), true)
-  assert.equal(isDeepSeek('opencode/deepseek-v4-flash'), true)
-  assert.equal(isDeepSeek('opencode-go/deepseek-v4-pro'), true)
-  assert.equal(isDeepSeek('DEEPSEEK/deepseek-flash'), true)
+test('a DeepSeek model resold by another provider does not count', () => {
+  assert.equal(isDeepSeekProvider('opencode/deepseek-v4-flash'), false)
+  assert.equal(isDeepSeekProvider('opencode-go/deepseek-v4-pro'), false)
+  assert.equal(isDeepSeekProvider('openrouter/deepseek/deepseek-chat'), false)
 })
 
-test('ignores other providers and missing models', () => {
-  assert.equal(isDeepSeek('openai/gpt-5'), false)
-  assert.equal(isDeepSeek('anthropic/claude-sonnet-4'), false)
-  assert.equal(isDeepSeek('openrouter/moonshotai/kimi-k2'), false)
-  assert.equal(isDeepSeek(null), false)
-  assert.equal(isDeepSeek(undefined), false)
+test('a model without a provider does not count', () => {
+  assert.equal(isDeepSeekProvider('deepseek-flash'), false)
+  assert.equal(isDeepSeekProvider('/deepseek-flash'), false)
+  assert.equal(isDeepSeekProvider(null), false)
+  assert.equal(isDeepSeekProvider(undefined), false)
+})
+
+test('counts down to the end of the current phase', () => {
+  assert.equal(nextChange(at('2026-09-28T02:00:00Z')).toISOString(), '2026-09-28T04:00:00.000Z')
+  assert.equal(nextChange(at('2026-09-28T05:00:00Z')).toISOString(), '2026-09-28T06:00:00.000Z')
+  assert.equal(nextChange(at('2026-09-28T00:30:00Z')).toISOString(), '2026-09-28T01:00:00.000Z')
+  assert.equal(nextChange(at('2026-09-28T11:00:00Z')).toISOString(), '2026-09-29T01:00:00.000Z')
+})
+
+test('counts across the weekend to Monday', () => {
+  assert.equal(nextChange(at('2026-10-02T11:00:00Z')).toISOString(), '2026-10-05T01:00:00.000Z')
+  assert.equal(nextChange(at('2026-09-27T03:00:00Z')).toISOString(), '2026-09-28T01:00:00.000Z')
+})
+
+test('formats the remaining time', () => {
+  assert.equal(formatRemaining(90_000), '01:30')
+  assert.equal(formatRemaining(7_290_000), '2:01:30')
+  assert.equal(formatRemaining(0), '00:00')
+  assert.equal(formatRemaining(-5_000), '00:00')
 })

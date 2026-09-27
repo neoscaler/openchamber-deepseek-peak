@@ -3,6 +3,10 @@
 var PEAK_WINDOWS_UTC = [[1, 4], [6, 10]]
 var WEEKDAYS_ONLY = true
 
+// Every UTC hour a phase can flip on: window starts and ends, plus the
+// weekday boundary that ends the weekend's continuous off-peak stretch.
+var FLIP_HOURS_UTC = [0, 1, 4, 6, 10]
+
 function isPeak(date) {
   if (WEEKDAYS_ONLY) {
     var day = date.getUTCDay()
@@ -15,20 +19,48 @@ function isPeak(date) {
   return false
 }
 
-function state(date) {
-  var peak = isPeak(date)
-  return { label: peak ? 'PEAK' : 'OFF-PEAK', peak: peak }
-}
-
-// The host sends "<providerID>/<modelID>". Match the model id so DeepSeek
-// models stay tracked behind a wrapper provider too (opencode/deepseek-*).
-function isDeepSeek(model) {
+// The host sends "<providerID>/<modelID>". Only the DeepSeek provider itself
+// counts; a wrapper provider that resells a DeepSeek model bills its own way.
+function isDeepSeekProvider(model) {
   if (typeof model !== 'string') return false
   var slash = model.indexOf('/')
-  var id = slash === -1 ? model : model.slice(slash + 1)
-  return id.toLowerCase().indexOf('deepseek') === 0
+  if (slash <= 0) return false
+  return model.slice(0, slash).toLowerCase() === 'deepseek'
 }
 
-var api = { isPeak: isPeak, state: state, isDeepSeek: isDeepSeek }
+// When the current phase ends. Scans the next nine UTC days' flip hours, so a
+// Friday evening counts down across the weekend to Monday 01:00 UTC.
+function nextChange(date) {
+  var now = date.getTime()
+  var base = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  var current = isPeak(date)
+  var found = null
+  for (var day = 0; day <= 8; day += 1) {
+    for (var i = 0; i < FLIP_HOURS_UTC.length; i += 1) {
+      var at = base + day * 86400000 + FLIP_HOURS_UTC[i] * 3600000
+      if (at <= now) continue
+      if (isPeak(new Date(at)) === current) continue
+      if (found === null || at < found) found = at
+    }
+  }
+  return found === null ? null : new Date(found)
+}
+
+function formatRemaining(ms) {
+  var total = Math.max(0, Math.floor(ms / 1000))
+  var hours = Math.floor(total / 3600)
+  var minutes = Math.floor((total % 3600) / 60)
+  var seconds = total % 60
+  var mm = (minutes < 10 ? '0' : '') + minutes
+  var ss = (seconds < 10 ? '0' : '') + seconds
+  return hours > 0 ? hours + ':' + mm + ':' + ss : mm + ':' + ss
+}
+
+var api = {
+  isPeak: isPeak,
+  isDeepSeekProvider: isDeepSeekProvider,
+  nextChange: nextChange,
+  formatRemaining: formatRemaining,
+}
 if (typeof module !== 'undefined') module.exports = api
 else globalThis.openchamberPeakBadge = api

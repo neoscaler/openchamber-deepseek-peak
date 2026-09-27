@@ -8,7 +8,11 @@ const RealDate = Date
 function loadMain({ now = '2026-09-28T05:00:00Z', source = 'host' } = {}) {
   const posted = []
   const listeners = {}
-  const badge = { textContent: '', dataset: {} }
+  const nodes = {
+    badge: { dataset: {}, hidden: true },
+    label: { textContent: '' },
+    count: { textContent: '' },
+  }
   const rootStyle = {
     properties: {},
     setProperty(name, value) {
@@ -24,7 +28,7 @@ function loadMain({ now = '2026-09-28T05:00:00Z', source = 'host' } = {}) {
     listeners[type] = handler
   }
   global.document = {
-    getElementById: (id) => (id === 'badge' ? badge : null),
+    getElementById: (id) => nodes[id] ?? null,
     documentElement: { style: rootStyle },
   }
   global.setInterval = () => 0
@@ -51,7 +55,7 @@ function loadMain({ now = '2026-09-28T05:00:00Z', source = 'host' } = {}) {
       global.Date = RealDate
     }
   }
-  return { posted, badge, rootStyle, host, listeners, send }
+  return { posted, nodes, rootStyle, host, listeners, send }
 }
 
 const ready = (session, tokens) => ({
@@ -61,43 +65,57 @@ const ready = (session, tokens) => ({
   payload: { session, theme: { tokens: tokens ?? {} } },
 })
 
+const deepseek = { id: 'ses-1', model: 'deepseek/deepseek-flash' }
+
 test('announces itself to the host frame', () => {
   const { posted } = loadMain()
   assert.deepEqual(posted[0], { channel: 'openchamber.sdk', v: 1, type: 'hello' })
 })
 
 test('stays hidden while the model is unknown', () => {
-  const { badge } = loadMain()
-  assert.equal(badge.textContent, '')
-  assert.equal(badge.dataset.peak, 'none')
+  const { nodes } = loadMain()
+  assert.equal(nodes.badge.hidden, true)
+  assert.equal(nodes.label.textContent, '')
 })
 
-test('renders the window for a DeepSeek session', () => {
-  const offPeak = loadMain()
-  offPeak.send(ready({ id: 'ses-1', model: 'deepseek/deepseek-flash' }))
-  assert.equal(offPeak.badge.textContent, 'OFF-PEAK')
-  assert.equal(offPeak.badge.dataset.peak, 'false')
+test('shows off-peak neutrally and peak in the warning state', () => {
+  const offPeak = loadMain({ now: '2026-09-28T05:00:00Z' })
+  offPeak.send(ready(deepseek))
+  assert.equal(offPeak.nodes.badge.hidden, false)
+  assert.equal(offPeak.nodes.badge.dataset.peak, 'false')
+  assert.equal(offPeak.nodes.label.textContent, 'OFF-PEAK')
 
   const peak = loadMain({ now: '2026-09-28T02:00:00Z' })
-  peak.send(ready({ id: 'ses-1', model: 'deepseek/deepseek-flash' }))
-  assert.equal(peak.badge.textContent, 'PEAK')
-  assert.equal(peak.badge.dataset.peak, 'true')
+  peak.send(ready(deepseek))
+  assert.equal(peak.nodes.badge.dataset.peak, 'true')
+  assert.equal(peak.nodes.label.textContent, 'PEAK')
 })
 
-test('hides again when the session switches provider', () => {
-  const { badge, send } = loadMain()
-  send(ready({ id: 'ses-1', model: 'deepseek/deepseek-flash' }))
-  assert.equal(badge.dataset.peak, 'false')
+test('counts down to the phase change', () => {
+  const { nodes, send } = loadMain({ now: '2026-09-28T02:00:00Z' })
+  send(ready(deepseek))
+  assert.equal(nodes.count.textContent, '2:00:00')
+
+  const across = loadMain({ now: '2026-09-28T02:59:30Z' })
+  across.send(ready(deepseek))
+  assert.equal(across.nodes.count.textContent, '1:00:30')
+})
+
+test('hides for any other provider, including resold DeepSeek models', () => {
+  const { nodes, send } = loadMain()
+  send(ready(deepseek))
+  assert.equal(nodes.badge.hidden, false)
+  send(ready({ id: 'ses-1', model: 'opencode/deepseek-v4-flash' }))
+  assert.equal(nodes.badge.hidden, true)
   send(ready({ id: 'ses-1', model: 'openai/gpt-5' }))
-  assert.equal(badge.textContent, '')
-  assert.equal(badge.dataset.peak, 'none')
+  assert.equal(nodes.badge.hidden, true)
   send(ready(null))
-  assert.equal(badge.dataset.peak, 'none')
+  assert.equal(nodes.badge.hidden, true)
 })
 
 test('takes colours, font and radius from the host theme', () => {
   const { rootStyle, send } = loadMain()
-  send(ready({ id: 'ses-1', model: 'deepseek/deepseek-flash' }, {
+  send(ready(deepseek, {
     warningText: '#f90',
     muted: '#888',
     mutedSurface: '#222',
@@ -113,9 +131,6 @@ test('takes colours, font and radius from the host theme', () => {
 
 test('ignores messages that are not from the host frame', () => {
   const { rootStyle, listeners } = loadMain()
-  listeners.message({
-    source: {},
-    data: ready({ id: 'ses-1', model: 'deepseek/deepseek-flash' }, { warningText: '#f90' }),
-  })
+  listeners.message({ source: {}, data: ready(deepseek, { warningText: '#f90' }) })
   assert.equal(rootStyle.properties['--oc-warning-text'], undefined)
 })

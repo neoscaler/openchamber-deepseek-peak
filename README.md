@@ -1,28 +1,28 @@
 # openchamber-peak-badge
 
 A [DeepSeek peak / off-peak badge](https://api-docs.deepseek.com/quick_start/pricing) for
-[OpenChamber](https://openchamber.dev). One pill in the Work Status panel above the chat:
+[OpenChamber](https://openchamber.dev). One pill in the Work Status panel above the chat,
+with the countdown to the next phase change:
 
 ```
-DeepSeek billing   ( OFF-PEAK )   # neutral text on a neutral pill
-DeepSeek billing   ( PEAK )       # warning tone, same pill
+DeepSeek   ( OFF-PEAK  1:24:10 )   # neutral label, dimmer counter
+DeepSeek   ( PEAK      0:36:02 )   # warning tone, same pill
 ```
 
-The pill keeps the label readable on light and dark themes, and it only appears while the
-open session runs a DeepSeek model. Nothing else: no rail icon, no service, no API key, no
-network, no currency.
+Nothing else in the section, and nothing on the rail: no service, no API key, no network, no
+currency.
 
 ## When it shows
 
-The host pushes the session with every state change, so the badge follows the model live:
-pick `deepseek/deepseek-flash` and it appears, switch to another provider and it goes away.
-Matching is on the model id, so `opencode/deepseek-v4-flash` counts too.
+Only for the `deepseek` provider itself — a wrapper provider that resells a DeepSeek model
+bills its own way, so `opencode/deepseek-v4-flash` stays dark. The host pushes the session on
+every state change, so the badge follows the selection live without polling for it.
 
-Not shown when the session has no model yet — before the first prompt of a fresh session the
-host reports none, and a badge for the wrong provider is worse than none. The row itself
-stays in the panel: a guest cannot remove its own section (the host draws the header, and the
-smallest frame is 24 px). To drop it entirely, switch it off once in the sections dialog
-behind the equalizer icon.
+Hidden when the session has no model yet: before the first prompt of a fresh session the host
+reports none, and a badge for the wrong provider is worse than none. The header line itself
+always stays — a guest cannot remove its own section (the host draws it, and the smallest
+frame is 24 px). To drop the row entirely, switch it off once in the sections dialog behind
+the equalizer icon.
 
 ## Install
 
@@ -45,8 +45,8 @@ DeepSeek bills at peak rates on weekdays only, in two UTC windows:
 
 Same windows as the OpenCode TUI plugin [opencode-peak-badge](https://github.com/hugobatista/opencode-peak-badge),
 so both badges agree. They are the two constants at the top of `status/peak.js`; change them
-there for a provider with different hours. The badge recomputes every 5 seconds, so a
-session that crosses a window boundary flips without a reload.
+there for a provider with different hours. The countdown ticks every second and waits out the
+weekend: on a Friday evening it counts to Monday 01:00 UTC, the next peak start.
 
 The frame is 24 px, set by `height` in the manifest. The page and the CSS in it stay on one
 line; an extension that needs a taller section calls `host.setHeight()` from its page.
@@ -56,7 +56,7 @@ line; an extension that needs a taller section calls `host.setHeight()` from its
 ```
 package.json        manifest: statusSection only, apiVersion 1, no capabilities
 status/index.html   the page, static CSS
-status/peak.js      peak windows, the state() the badge renders, isDeepSeek()
+status/peak.js      peak windows, nextChange(), the provider check
 status/main.js      host handshake and render
 test/               node --test, no dependencies
 ```
@@ -79,6 +79,6 @@ version, `CHANNEL`/`API` in `status/main.js` are the two lines to touch.
 npm test        # node --test, nothing to install
 ```
 
-Tests cover the window boundaries, the weekend rule, the manifest fields the host rejects
-installs over, and the handshake the host sees (`hello`, theme tokens from `ready`, foreign
-frames ignored).
+Tests cover the window boundaries, the weekend rule, the countdown across a weekend, the
+provider check, the manifest fields the host rejects installs over, and the handshake the
+host sees (`hello`, theme tokens from `ready`, foreign frames ignored).

@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>DeepSeek billing</title>
+    <title>DeepSeek</title>
     <style>
       html,
       body {
@@ -16,25 +16,34 @@
         font-family: var(--oc-font, system-ui, sans-serif);
       }
       #badge {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
         padding: 1px 6px;
         border-radius: var(--oc-radius, 6px);
-        /* Neutral pill, so the label reads on both light and dark themes. */
+        /* Neutral pill, so the colours read on light and dark themes. */
         background: var(--oc-muted-surface, rgba(127, 127, 127, 0.12));
         font-size: 12px;
-        font-weight: 600;
         letter-spacing: 0.04em;
+      }
+      #label {
+        font-weight: 600;
         color: var(--oc-muted, #888);
       }
-      #badge[data-peak='true'] {
+      #badge[data-peak='true'] #label {
         color: var(--oc-warning-text, var(--oc-muted, #888));
       }
-      #badge[data-peak='none'] {
-        display: none;
+      #count {
+        color: var(--oc-muted, #888);
+        font-variant-numeric: tabular-nums;
       }
     </style>
   </head>
   <body>
-    <span id="badge" data-peak="none"></span>
+    <span id="badge" data-peak="false" hidden>
+      <span id="label"></span>
+      <span id="count"></span>
+    </span>
     <script src="peak.js"></script>
     <script src="main.js"></script>
   </body>
