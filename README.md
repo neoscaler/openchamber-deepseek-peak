@@ -1,4 +1,4 @@
-# openchamber-peak-badge
+# openchamber-deepseek-peak
 
 A [DeepSeek peak / off-peak badge](https://api-docs.deepseek.com/quick_start/pricing) for
 [OpenChamber](https://openchamber.dev). It sits in the Work Status panel above the chat under
@@ -31,8 +31,8 @@ the equalizer icon.
 
 OpenChamber → **Settings → Extensions → Add**, then paste one of:
 
-- GitHub (recommended, update checks): `https://github.com/neoscaler/openchamber-peak-badge`
-- Local folder (runs from the folder, edit and reload): `/path/to/openchamber-peak-badge`
+- GitHub (recommended, update checks): `https://github.com/neoscaler/openchamber-deepseek-peak`
+- Local folder (runs from the folder, edit and reload): `/path/to/openchamber-deepseek-peak`
 
 Needs OpenChamber **2.0.1+** (`contributes.statusSection`). The dialog asks for no
 capabilities, so there is nothing to approve.

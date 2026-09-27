@@ -1,5 +1,5 @@
 {
-  "name": "openchamber-peak-badge",
+  "name": "openchamber-deepseek-peak",
   "version": "0.1.0",
   "description": "OpenChamber Work Status badge: DeepSeek peak or off-peak billing window",
   "license": "MIT",
@@ -16,7 +16,7 @@
     },
     "contributes": {
       "panel": {
-        "id": "peak-badge",
+        "id": "deepseek-peak",
         "name": "DeepSeek Pricing",
         "icon": "icon.svg"
       },
