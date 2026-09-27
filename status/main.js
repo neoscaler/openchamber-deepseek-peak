@@ -42,15 +42,19 @@
     var data = event.data
     if (!data || data.channel !== CHANNEL || data.v !== API || data.type !== 'ready') return
     var payload = data.payload || {}
-    var tokens = payload.theme && payload.theme.tokens
+    var theme = payload.theme
+    var tokens = theme && theme.tokens
+    var root = document.documentElement
     if (tokens) {
-      var root = document.documentElement.style
-      root.setProperty('--oc-warning-text', tokens.warningText)
-      root.setProperty('--oc-muted', tokens.muted)
-      root.setProperty('--oc-muted-surface', tokens.mutedSurface)
-      root.setProperty('--oc-font', tokens.font)
-      root.setProperty('--oc-radius', tokens.radius)
+      root.style.setProperty('--oc-warning-text', tokens.warningText)
+      root.style.setProperty('--oc-muted', tokens.muted)
+      root.style.setProperty('--oc-font', tokens.font)
+      root.style.setProperty('--oc-radius', tokens.radius)
     }
+    // Without this the iframe canvas stays white in dark mode: the document
+    // paints its own background, and color-scheme is what makes the browser
+    // use the dark default. Same thing the SDK's applyHostTheme does.
+    if (theme && theme.mode) root.style.colorScheme = theme.mode
     model = payload.session ? payload.session.model || null : null
     render()
   })

@@ -58,11 +58,11 @@ function loadMain({ now = '2026-09-28T05:00:00Z', source = 'host' } = {}) {
   return { posted, nodes, rootStyle, host, listeners, send }
 }
 
-const ready = (session, tokens) => ({
+const ready = (session, tokens, mode = 'dark') => ({
   channel: 'openchamber.sdk',
   v: 1,
   type: 'ready',
-  payload: { session, theme: { tokens: tokens ?? {} } },
+  payload: { session, theme: { mode, tokens: tokens ?? {} } },
 })
 
 const deepseek = { id: 'ses-1', model: 'deepseek/deepseek-flash' }
@@ -118,15 +118,23 @@ test('takes colours, font and radius from the host theme', () => {
   send(ready(deepseek, {
     warningText: '#f90',
     muted: '#888',
-    mutedSurface: '#222',
     font: 'Inter',
     radius: '8px',
   }))
   assert.equal(rootStyle.properties['--oc-warning-text'], '#f90')
   assert.equal(rootStyle.properties['--oc-muted'], '#888')
-  assert.equal(rootStyle.properties['--oc-muted-surface'], '#222')
   assert.equal(rootStyle.properties['--oc-font'], 'Inter')
   assert.equal(rootStyle.properties['--oc-radius'], '8px')
+})
+
+test('paints the iframe canvas with the host colour scheme', () => {
+  const dark = loadMain()
+  dark.send(ready(deepseek, {}, 'dark'))
+  assert.equal(dark.rootStyle.colorScheme, 'dark')
+
+  const light = loadMain()
+  light.send(ready(deepseek, {}, 'light'))
+  assert.equal(light.rootStyle.colorScheme, 'light')
 })
 
 test('ignores messages that are not from the host frame', () => {

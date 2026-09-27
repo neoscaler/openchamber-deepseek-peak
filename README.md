@@ -9,10 +9,11 @@ DeepSeek   [OFF-PEAK] Switch 1:24:10   # neutral label, dimmer counter
 DeepSeek   [PEAK]     Switch 0:36:00   # warning tone
 ```
 
-The brackets frame the label, so nothing needs a fill of its own — the row reads the same on
-a white panel and a dark one. The countdown shows seconds and snaps to ten of them, matching
-how often the page redraws. Nothing else in the section, and nothing on the rail: no service,
-no API key, no network, no currency.
+The brackets frame the label, so nothing needs a fill of its own. The page sets `color-scheme`
+from the host theme on every `ready` — without it the iframe draws its own white canvas in
+dark mode. The countdown shows seconds and snaps to ten of them, matching how often the page
+redraws. Nothing else in the section, and nothing on the rail: no service, no API key, no
+network, no currency.
 
 ## When it shows
 
