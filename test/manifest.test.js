@@ -16,7 +16,9 @@ test('host accepts the manifest shape', () => {
   // leaving out panel.entry is what keeps the extension off the rail.
   assert.match(openchamber.contributes.panel.id, PANEL_ID)
   assert.ok(openchamber.contributes.panel.name.length > 0)
-  assert.match(openchamber.contributes.panel.icon, PANEL_ID)
+  // A Remixicon name or a package .svg, same rule as the host's isPanelIcon.
+  const icon = openchamber.contributes.panel.icon
+  assert.ok(icon.toLowerCase().endsWith('.svg') || PANEL_ID.test(icon), `icon ${icon}`)
   assert.equal(openchamber.contributes.panel.entry, undefined)
 })
 
@@ -25,4 +27,11 @@ test('status section points at a packaged html file', () => {
   assert.match(section.entry, /\.html$/)
   assert.ok(fs.existsSync(path.join(root, section.entry)), `${section.entry} missing`)
   assert.ok(section.height >= 24 && section.height <= 320)
+})
+
+test('a package icon resolves to the file it names', () => {
+  const icon = openchamber.contributes.panel.icon
+  if (icon.toLowerCase().endsWith('.svg')) {
+    assert.ok(fs.existsSync(path.join(root, icon)), `${icon} missing`)
+  }
 })

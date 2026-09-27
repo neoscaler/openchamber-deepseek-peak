@@ -1,12 +1,12 @@
 # openchamber-peak-badge
 
 A [DeepSeek peak / off-peak badge](https://api-docs.deepseek.com/quick_start/pricing) for
-[OpenChamber](https://openchamber.dev). One pill in the Work Status panel above the chat,
-with the countdown to the next phase change:
+[OpenChamber](https://openchamber.dev). It sits in the Work Status panel above the chat under
+the DeepSeek mark, with the countdown to the next phase change:
 
 ```
-DeepSeek   [OFF-PEAK] Switch 1:24:10   # neutral label, dimmer counter
-DeepSeek   [PEAK]     Switch 0:36:00   # warning tone
+DeepSeek Pricing   [OFF-PEAK] Switch 1:24:10   # neutral label, dimmer counter
+DeepSeek Pricing   [PEAK]     Switch 0:36:00   # warning tone
 ```
 
 The brackets frame the label, so nothing needs a fill of its own. The page sets `color-scheme`
@@ -54,15 +54,37 @@ evening it counts to Monday 01:00 UTC, the next peak start.
 The frame is 24 px, set by `height` in the manifest. The page and the CSS in it stay on one
 line; an extension that needs a taller section calls `host.setHeight()` from its page.
 
+## Timezones
+
+Everything runs on UTC, so the machine's zone does not enter into it: the windows are read
+with `getUTCDay`/`getUTCHours`, the flip instants are built with `Date.UTC`, and the counter
+is the difference between two absolute instants. A zone with a half-hour offset, a zone at
++14, and a zone that shifts for daylight saving all produce the same answer.
+
+The weekend rule is UTC too, and that matches DeepSeek: the two windows land on 09:00–12:00
+and 14:00–18:00 Beijing time, the same weekday as in UTC, so "weekday" means the same thing in
+both. Beijing has no daylight saving, so nothing shifts there either.
+
+Because the countdown is recomputed from the clock instead of decremented, a sleeping laptop
+or a timezone change mid-session shows the right value on the next redraw.
+`test/timezone.test.js` runs the same instants under UTC, `America/Los_Angeles`,
+`Asia/Kolkata` (+05:30) and `Pacific/Kiritimati` (+14) in separate processes, checks that each
+zone really applied, and that all four agree.
+
 ## Layout
 
 ```
 package.json        manifest: statusSection only, apiVersion 1, no capabilities
+icon.svg            the DeepSeek mark, used as the section's header icon
 status/index.html   the page, static CSS
 status/peak.js      peak windows, nextChange(), the provider check
 status/main.js      host handshake and render
 test/               node --test, no dependencies
 ```
+
+The header icon is DeepSeek's own logo, taken from their docs site and recoloured to the
+brand blue so it reads on a light and a dark panel. It stays DeepSeek's mark; the extension
+only uses it to say which provider the row is about.
 
 The host schema requires `contributes.panel` (id, name, icon) even for an extension that
 ships only a section — leaving the block out fails the install with `missing-panel` and
@@ -83,5 +105,6 @@ npm test        # node --test, nothing to install
 ```
 
 Tests cover the window boundaries, the weekend rule, the countdown across a weekend, the
-provider check, the manifest fields the host rejects installs over, and the handshake the
-host sees (`hello`, theme tokens from `ready`, foreign frames ignored).
+provider check, timezone independence, the manifest fields the host rejects installs over
+(including a package icon that has to exist), and the handshake the host sees (`hello`, theme
+tokens and `color-scheme` from `ready`, foreign frames ignored).

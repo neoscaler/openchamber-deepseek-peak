@@ -17,12 +17,12 @@
     "contributes": {
       "panel": {
         "id": "peak-badge",
-        "name": "Peak badge",
-        "icon": "flashlight-line"
+        "name": "DeepSeek Pricing",
+        "icon": "icon.svg"
       },
       "statusSection": {
         "entry": "status/index.html",
-        "title": "DeepSeek",
+        "title": "DeepSeek Pricing",
         "height": 24
       }
     }
