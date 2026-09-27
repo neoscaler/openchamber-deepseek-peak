@@ -16,6 +16,10 @@
         font-family: var(--oc-font, system-ui, sans-serif);
       }
       #badge {
+        padding: 1px 6px;
+        border-radius: var(--oc-radius, 6px);
+        /* Neutral pill, so the label reads on both light and dark themes. */
+        background: var(--oc-muted-surface, rgba(127, 127, 127, 0.12));
         font-size: 12px;
         font-weight: 600;
         letter-spacing: 0.04em;
@@ -24,10 +28,13 @@
       #badge[data-peak='true'] {
         color: var(--oc-warning-text, var(--oc-muted, #888));
       }
+      #badge[data-peak='none'] {
+        display: none;
+      }
     </style>
   </head>
   <body>
-    <span id="badge">…</span>
+    <span id="badge" data-peak="none"></span>
     <script src="peak.js"></script>
     <script src="main.js"></script>
   </body>

@@ -1,14 +1,28 @@
 # openchamber-peak-badge
 
 A [DeepSeek peak / off-peak badge](https://api-docs.deepseek.com/quick_start/pricing) for
-[OpenChamber](https://openchamber.dev). One line in the Work Status panel above the chat:
+[OpenChamber](https://openchamber.dev). One pill in the Work Status panel above the chat:
 
 ```
-DeepSeek billing   PEAK          # warning colour
-DeepSeek billing   OFF-PEAK      # muted
+DeepSeek billing   ( OFF-PEAK )   # neutral text on a neutral pill
+DeepSeek billing   ( PEAK )       # warning tone, same pill
 ```
 
-Nothing else: no rail icon, no service, no API key, no network, no currency.
+The pill keeps the label readable on light and dark themes, and it only appears while the
+open session runs a DeepSeek model. Nothing else: no rail icon, no service, no API key, no
+network, no currency.
+
+## When it shows
+
+The host pushes the session with every state change, so the badge follows the model live:
+pick `deepseek/deepseek-flash` and it appears, switch to another provider and it goes away.
+Matching is on the model id, so `opencode/deepseek-v4-flash` counts too.
+
+Not shown when the session has no model yet — before the first prompt of a fresh session the
+host reports none, and a badge for the wrong provider is worse than none. The row itself
+stays in the panel: a guest cannot remove its own section (the host draws the header, and the
+smallest frame is 24 px). To drop it entirely, switch it off once in the sections dialog
+behind the equalizer icon.
 
 ## Install
 
@@ -42,7 +56,7 @@ line; an extension that needs a taller section calls `host.setHeight()` from its
 ```
 package.json        manifest: statusSection only, apiVersion 1, no capabilities
 status/index.html   the page, static CSS
-status/peak.js      peak windows and the state() the badge renders
+status/peak.js      peak windows, the state() the badge renders, isDeepSeek()
 status/main.js      host handshake and render
 test/               node --test, no dependencies
 ```

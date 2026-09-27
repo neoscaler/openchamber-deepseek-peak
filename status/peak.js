@@ -20,6 +20,15 @@ function state(date) {
   return { label: peak ? 'PEAK' : 'OFF-PEAK', peak: peak }
 }
 
-var api = { isPeak: isPeak, state: state }
+// The host sends "<providerID>/<modelID>". Match the model id so DeepSeek
+// models stay tracked behind a wrapper provider too (opencode/deepseek-*).
+function isDeepSeek(model) {
+  if (typeof model !== 'string') return false
+  var slash = model.indexOf('/')
+  var id = slash === -1 ? model : model.slice(slash + 1)
+  return id.toLowerCase().indexOf('deepseek') === 0
+}
+
+var api = { isPeak: isPeak, state: state, isDeepSeek: isDeepSeek }
 if (typeof module !== 'undefined') module.exports = api
 else globalThis.openchamberPeakBadge = api
