@@ -15,6 +15,11 @@
       "openchamber": ">=2.0.1"
     },
     "contributes": {
+      "panel": {
+        "id": "peak-badge",
+        "name": "Peak badge",
+        "icon": "flashlight-line"
+      },
       "statusSection": {
         "entry": "status/index.html",
         "title": "DeepSeek billing",
