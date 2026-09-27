@@ -1,6 +1,6 @@
 {
   "name": "openchamber-deepseek-peak",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "OpenChamber Work Status badge: DeepSeek peak or off-peak billing window",
   "license": "MIT",
   "keywords": [
